@@ -51,3 +51,19 @@ export async function GetUsers() {
     await client.close();
     return users;
 }
+
+export async function SetPost(userName:string, src:string) {
+    const postsCollection = await GetCollection("Posts");
+    await client.connect();
+    const posts = await postsCollection.insertOne({"name":userName, "post":src});
+    await client.close();
+    return posts;
+}
+
+export async function GetPost() {
+    const userCollection = await GetCollection("Posts");
+        await client.connect();
+        const posts = await userCollection.find({}, { projection: { _id: 0, post: 1 } }).toArray();
+        await client.close();
+        return posts.map(doc => doc.post);
+}
