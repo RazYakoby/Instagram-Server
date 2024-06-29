@@ -7,9 +7,9 @@ router.get("/", async (req: Request, res: Response, next) => {
     const posts = await GetPost();
     res.send(posts);
     next();
-}); 
+});
 
-router.post("/upload", async (req:Request,res:Response,next) => {
+router.post("/postupload", async (req:Request,res:Response,next) => {
     const {username, src} = req.body;
     await SetPost(username, src);
     res.status(200).send("Post uploaded succesfully");
