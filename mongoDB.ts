@@ -67,11 +67,10 @@ export async function GetUserPost(username:string) {
     return posts.map(doc => doc.post);
 }
 
-export async function GetUserPostNStatus(username:string) {
+export async function GetUserPostNStatus(src:string) {
     await client.connect();
     const userCollection = await client.db("users").collection("Posts");
-    const posts = await userCollection.find({name: username}, { projection: { _id: 0, post: 1 , name: 1} }).toArray();
+    const posts = await userCollection.find({post: src}, { projection: { _id: 0, post: 1 , name: 1} }).toArray();
     await client.close();
     return posts.map(doc => ({ src: doc.post, name: doc.name }));
 }
-

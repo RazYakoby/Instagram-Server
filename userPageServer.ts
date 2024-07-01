@@ -19,8 +19,8 @@ router.post("/userposts", async (req: Request, res: Response, next) => {
 })
 
 router.post("/userpostsnstatus", async (req: Request, res: Response, next) => {
-    const {username} = req.body;
-    const postNStatus = await GetUserPostNStatus(username);
+    const {src} = req.body;
+    const postNStatus = await GetUserPostNStatus(src);
     res.status(200).send(postNStatus);
     next;
 })
