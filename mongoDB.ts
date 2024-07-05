@@ -74,3 +74,48 @@ export async function GetUserPostNStatus(src:string) {
     await client.close();
     return posts.map(doc => ({ src: doc.post, name: doc.name }));
 }
+
+export async function SetStories(username: string, src: string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("Stories");
+    const stories = await storyCollection.insertOne({"username": username, "story": src});
+    await client.close();
+    return stories;
+}
+
+export async function GetStories(username: string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("Stories");
+    const stories = await storyCollection.find(
+        { "username": { $ne: username } },
+        { projection: { _id: 0, username: 1, story: 1 } } // Exclude _id and username from the result
+    ).toArray();
+    await client.close();
+    return stories.map(doc => ({ username: doc.username, story: doc.story }));
+}
+
+export async function GetMyStories(username: string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("Stories");
+    const stories = await storyCollection.find({"username": username}, { projection: { _id: 0, username: 1 , story: 1} }).toArray();
+    await client.close();
+    return stories.map(doc => ({ username: doc.username, story: doc.story }));
+}
+
+export async function MyStoryExists(username:string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("Stories");
+    const stories = await storyCollection.find({"username": username}).toArray();
+    await client.close();
+    return stories.length > 0;
+}
+
+export async function UsersStoryExists(username:string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("Stories");
+    const stories = await storyCollection.find({"username": { $ne: username }}).toArray();
+    await client.close();
+    return stories.length > 0;
+}
+
+
