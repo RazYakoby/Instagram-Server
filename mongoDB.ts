@@ -38,9 +38,9 @@ export async function GetUser(userName:string, password:string) {
 export async function GetUsers() {
     await client.connect();
     const userCollection = await client.db("users").collection("User");
-    const users = await userCollection.find({}).toArray();
+    const users = await userCollection.find({}, { projection: { _id: 0, name: 1} }).toArray();
     await client.close();
-    return users;
+    return users.map(user => ({ name: user.name }));
 }
 
 export async function SetPost(userName:string, src:string) {

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { GetMyStories, GetPost, GetStories, MyStoryExists, SetPost, SetStories, UsersStoryExists } from './mongoDB';
+import { GetMyStories, GetPost, GetStories, MyStoryExists, SetPost, SetStories, UsersStoryExists, GetUsers } from './mongoDB';
 
 const router = express.Router();
 
@@ -89,5 +89,15 @@ router.post("/userstoryexists", async (req: Request, res: Response) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+router.post("/getallusers", async (req: Request, res: Response) => {
+    try {
+        const posts = await GetUsers();
+        res.send(posts);
+    } catch (error) {
+        console.error('Error fetching users for explorer:', error);
+        res.status(500).send('Internal Server Error');
+    }
+})
 
 export const mainPageServer = router;
