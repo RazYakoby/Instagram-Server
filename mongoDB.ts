@@ -166,3 +166,135 @@ export async function MyStoryMemoryExists(username:string) {
     }
 }
 
+export async function SetStutus(username: string) {
+    await client.connect();
+    const storyCollection = await client.db("users").collection("UserStatus");
+    const stories = await storyCollection.insertOne({"username": username, "followers": 0, "following": 0, "followersuser": "", "followinguser": ""});
+    await client.close();
+    return stories;
+}
+
+export async function GetSatus(username: string) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const status = await userCollection.find({"username": username}, { projection: { followers: 1, following: 1} }).toArray();
+    await client.close();
+    return status.map(user => ({ followers: user.followers, following: user.following }));
+}
+
+export async function UpdateFollowers(username :string, followers: number) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const users = await userCollection.updateOne({"username": username}, {$set: {"followers":followers + 1}});
+    await client.close();
+    return users; 
+}
+
+export async function UpdateFollowing(username: string, following: number) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const users = await userCollection.updateOne({"username": username}, {$set: {"following":following + 1}});
+    await client.close();
+    return users; 
+}
+
+export async function MyStatusExists(username:string) {
+    try {
+        await client.connect();
+        const status = client.db("users").collection("UserStatus");
+        const userstatus = await status.find({ "username": username }).toArray();
+        await client.close();
+        const exists = userstatus.length > 0;
+        console.log(`status for ${username}:`, exists);
+        return exists;
+    } catch (error) {
+        console.error('Error in status:', error);
+        await client.close();
+        return false;
+    }
+}
+
+interface UserStatusDocument {
+    username: string;
+    followersuser: string[];
+    followinguser: string[];
+}
+
+export async function UpdateFollowersUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $set: { followersuser: [user] } }
+        );
+        console.log(result);
+        return result;
+    } finally {
+        await client.close();
+    }
+}
+
+export async function UpdateFollowingUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $set: { followinguser: [user] } }
+        );
+        console.log(result);
+        return result;
+    } finally {
+        await client.close();
+    }
+}
+
+export async function PushToFollowersUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+
+        // Ensure 'following' field is an array and add the new user
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $push: { followersuser: user } } // $addToSet ensures no duplicates
+        );
+        return result;
+    } finally {
+        await client.close();
+    }
+}
+
+export async function PushToFollowingUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+
+        // Ensure 'following' field is an array and add the new user
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $push: { followinguser: user } } // $addToSet ensures no duplicates
+        );
+        return result;
+    } finally {
+        await client.close();
+    }
+}
+
+export async function GetFollowers(username: string) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const status = await userCollection.find({"username": username}, { projection: { followersuser: 1} }).toArray();
+    await client.close();
+    return status.map(user => ({ user: user.followersuser }));
+}
+
+export async function GetFollowing(username: string) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const status = await userCollection.find({"username": username}, { projection: { followinguser: 1} }).toArray();
+    await client.close();
+    return status.map(user => ({ user: user.followinguser }));
+}
+
