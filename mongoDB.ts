@@ -182,7 +182,7 @@ export async function GetSatus(username: string) {
     return status.map(user => ({ followers: user.followers, following: user.following }));
 }
 
-export async function UpdateFollowers(username :string, followers: number) {
+export async function UpdatepushFollowers(username :string, followers: number) {
     await client.connect();
     const userCollection = await client.db("users").collection("UserStatus");
     const users = await userCollection.updateOne({"username": username}, {$set: {"followers":followers + 1}});
@@ -190,10 +190,26 @@ export async function UpdateFollowers(username :string, followers: number) {
     return users; 
 }
 
-export async function UpdateFollowing(username: string, following: number) {
+export async function UpdatepushFollowing(username: string, following: number) {
     await client.connect();
     const userCollection = await client.db("users").collection("UserStatus");
     const users = await userCollection.updateOne({"username": username}, {$set: {"following":following + 1}});
+    await client.close();
+    return users; 
+}
+
+export async function UpdatepullFollowers(username :string, followers: number) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const users = await userCollection.updateOne({"username": username}, {$set: {"followers":followers - 1}});
+    await client.close();
+    return users; 
+}
+
+export async function UpdatepullFollowing(username: string, following: number) {
+    await client.connect();
+    const userCollection = await client.db("users").collection("UserStatus");
+    const users = await userCollection.updateOne({"username": username}, {$set: {"following":following - 1}});
     await client.close();
     return users; 
 }
@@ -298,3 +314,34 @@ export async function GetFollowing(username: string) {
     return status.map(user => ({ user: user.followinguser }));
 }
 
+export async function PullToFollowersUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+
+        // Ensure 'following' field is an array and add the new user
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $pull: { followersuser: user } } // $addToSet ensures no duplicates
+        );
+        return result;
+    } finally {
+        await client.close();
+    }
+}
+
+export async function PullToFollowingUser(username: string, user: string) {
+    try {
+        await client.connect();
+        const userCollection = client.db("users").collection<UserStatusDocument>("UserStatus");
+
+        // Ensure 'following' field is an array and add the new user
+        const result = await userCollection.updateOne(
+            { username: username },
+            { $pull: { followinguser: user } } // $addToSet ensures no duplicates
+        );
+        return result;
+    } finally {
+        await client.close();
+    }
+}

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { GetUserPost, GetUserPostNStatus, SetMemoryStories, GetMyMemoryStories, MyStoryMemoryExists, SetStutus, GetSatus, UpdateFollowers, UpdateFollowing, MyStatusExists, UpdateFollowersUser, UpdateFollowingUser, PushToFollowersUser, PushToFollowingUser, GetFollowers, GetFollowing } from './mongoDB';
+import { GetUserPost, GetUserPostNStatus, SetMemoryStories, GetMyMemoryStories, MyStoryMemoryExists, SetStutus, GetSatus, UpdatepushFollowers, UpdatepushFollowing, UpdatepullFollowers, UpdatepullFollowing, MyStatusExists, UpdateFollowersUser, UpdateFollowingUser, PushToFollowersUser, PushToFollowingUser, GetFollowers, GetFollowing, PullToFollowersUser, PullToFollowingUser } from './mongoDB';
 import { error } from 'console';
 
 const router = express.Router();
@@ -116,7 +116,7 @@ router.post("/getstatus", async (req: Request, res: Response) => {
 router.post("/updatefollowers", async (req: Request, res: Response) => {
     try {
         const { username } = req.body;
-        const result = await UpdateFollowers(username, 1);
+        const result = await UpdatepushFollowers(username, 1);
         if (result.matchedCount === 0) {
             res.status(404).send('User not found');
         } else {
@@ -131,7 +131,37 @@ router.post("/updatefollowers", async (req: Request, res: Response) => {
 router.post("/updatefollowing", async (req: Request, res: Response) => {
     try {
         const { username } = req.body;
-        const result = await UpdateFollowing(username, 1);
+        const result = await UpdatepushFollowing(username, 1);
+        if (result.matchedCount === 0) {
+            res.status(404).send('User not found');
+        } else {
+            res.status(200).send("Following count updated successfully!");
+        }
+    } catch (error) {
+        console.error('Error in /updatefollowing:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.post("/updatepullfollowers", async (req: Request, res: Response) => {
+    try {
+        const { username } = req.body;
+        const result = await UpdatepullFollowers(username, 1);
+        if (result.matchedCount === 0) {
+            res.status(404).send('User not found');
+        } else {
+            res.status(200).send("Followers count updated successfully!");
+        }
+    } catch (error) {
+        console.error('Error in /updatefollowers:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+router.post("/updatepullfollowing", async (req: Request, res: Response) => {
+    try {
+        const { username } = req.body;
+        const result = await UpdatepullFollowing(username, 1);
         if (result.matchedCount === 0) {
             res.status(404).send('User not found');
         } else {
@@ -219,6 +249,29 @@ router.post("/getfollowing", async (req: Request, res: Response) => {
     }
 })
 
+router.post("/pulltofollowersuser", async (req: Request, res: Response) => {
+    try {
+        const { username, user } = req.body;
+        const result = await PullToFollowersUser(username, user);
+        console.log(result);
+            res.status(200).send("User push updated successfully!");
+    } catch (error) {
+        console.error('Error in /updateuserfollowing:', error);
+        res.status(500).send('push Server Error');
+    }
+});
+
+router.post("/pulltofollowinguser", async (req: Request, res: Response) => {
+    try {
+        const { username, user } = req.body;
+        const result = await PullToFollowingUser(username, user);
+        console.log(result);
+            res.status(200).send("User push updated successfully!");
+    } catch (error) {
+        console.error('Error in /updateuserfollowing:', error);
+        res.status(500).send('push Server Error');
+    }
+});
 
 export const userPageServer = router;
 
